@@ -1,13 +1,9 @@
 {
-  "name": "series-tracker",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+	"version": "1.0.0",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"frontend": "npm run dev --prefix frontend",
+		"backend": "npm run dev --prefix backend"
+	}
 }
