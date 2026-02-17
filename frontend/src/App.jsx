@@ -1,13 +1,7 @@
-import React from 'react'
+import Home from "./pages/Home";
 
-const App = () => {
-  return (
-		<div>
-			<h1 className="text-3xl font-bold text-purple-600">
-				Tailwind is working 
-			</h1>
-		</div>
-	);
+function App() {
+	return <Home />;
 }
 
-export default App
+export default App;
