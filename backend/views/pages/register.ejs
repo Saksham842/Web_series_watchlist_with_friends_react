@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Page</title>
+  <link rel="stylesheet" href="/css/register.css" />
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <div class="nav-left">
+      <a href="#" class="logo">
+          <i class="bx bx-movie-play bx-tada main-color"></i>
+          BING<span class="logo-e">E</span>SYNC
+      </a>
+    </div>
+
+    <h2>Register</h2>
+
+    <form action="/watchlist/register" method="POST">
+
+      <div class="input-field">
+        <input type="text" name="name" required />
+        <label>Create your username</label>
+      </div>
+
+      <div class="input-field">
+        <input type="email" name="email" required />
+        <label>Enter your email</label>
+      </div>
+
+      <div class="input-field">
+        <input type="password" name="password" required />
+        <label>Create your password</label>
+      </div>
+
+      <button type="submit">Register</button>
+
+      <div class="register">
+        <p>Already have an account? 
+          <a href="http://localhost:3000/watchlist/login">Login</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
