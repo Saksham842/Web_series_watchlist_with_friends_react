@@ -97,6 +97,7 @@ exports.verifyOtp = wrapAsync(async (req, res) => {
 
 exports.login = wrapAsync(async (req, res) => {
     const { email, password } = req.body;
+    console.log(`BACKEND: Login attempt for email: ${email}`);
 
     if (!email || !password) {
         return res.status(400).json({ message: "Please fill in all fields." });
@@ -105,27 +106,37 @@ exports.login = wrapAsync(async (req, res) => {
     const q = "SELECT * FROM user WHERE email = ?";
     connection.query(q, [email], async (err, results) => {
         if (err) {
-            console.error("Database error:", err);
+            console.error("BACKEND: Database error during login:", err);
             return res.status(500).json({ message: "Server error." });
         }
 
         if (results.length === 0) {
+            console.warn(`BACKEND: Login failed - No account found for email: ${email}`);
             return res.status(401).json({ message: "No account found with this email." });
         }
 
         const user = results[0];
 
         if (!user.verified) {
+            console.warn(`BACKEND: Login failed - User not verified: ${email}`);
             return res.status(403).json({ message: "Please verify your email before logging in." });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.warn(`BACKEND: Login failed - Incorrect password for email: ${email}`);
             return res.status(401).json({ message: "Incorrect password." });
         }
 
         // Standard session login for now, but enabling JSON response
-        req.session.user = { id: user.id, name: user.name, email: user.email };
+        req.session.user = { 
+            id: user.id, 
+            name: user.name, 
+            email: user.email,
+            bio: user.bio,
+            profile_pic: user.profile_pic
+        };
+        console.log(`BACKEND: Login successful for user: ${user.name} (id: ${user.id})`);
         res.json({ message: "Login successful", user: req.session.user });
     });
 });

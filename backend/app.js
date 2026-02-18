@@ -1,5 +1,7 @@
+console.log("DEBUG: APP.JS IS STARTING");
 const express = require("express");
 const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 const path = require("path");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -16,37 +18,68 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:5173', // Vite default port
-    credentials: true
+    origin: [
+        'http://localhost:5173', 'http://127.0.0.1:5173', 'http://[::1]:5173',
+        'http://localhost:5174', 'http://127.0.0.1:5174', 'http://[::1]:5174',
+        'http://localhost:5175', 'http://127.0.0.1:5175', 'http://[::1]:5175'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Session setup
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'Abcd@1234',
+    database: process.env.DB_NAME || 'watchlist',
+    clearExpired: true,
+    checkExpirationInterval: 900000, // 15 min
+    expiration: 86400000, // 1 day
+    createDatabaseTable: true,
+});
+
 app.use(
-	session({
-		secret: "yourSecretKeyHere",
-		resave: false,
-		saveUninitialized: false,
-		cookie: { 
+    session({
+        secret: "yourSecretKeyHere",
+        resave: false,
+        saveUninitialized: false,
+        store: sessionStore,
+        cookie: {
             secure: false, // Set to true if using HTTPS
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24 // 1 day
-        }, 
-	})
+        },
+    })
 );
+
+// Request Logger & Session Debug (Moved after session middleware)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
+    console.log("DEBUG: Session ID:", req.sessionID);
+    console.log("DEBUG: Session User:", req.session && req.session.user ? req.session.user.id : "Not Logged In");
+    next();
+});
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const seriesRoutes = require("./routes/seriesRoutes");
+console.log("DEBUG: seriesRoutes loaded, keys:", Object.keys(seriesRoutes));
 const watchlistRoutes = require("./routes/watchlistRoutes");
 const friendRoutes = require("./routes/friendRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/series", seriesRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/user", userRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

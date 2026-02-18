@@ -154,3 +154,22 @@ exports.searchSeries = wrapAsync(async (req, res) => {
     const [results] = await connection.promise().query(sql, [`%${query}%`]);
     res.json(results);
 });
+
+exports.getGenres = wrapAsync(async (req, res) => {
+    const [genres] = await connection.promise().query("SELECT * FROM genres ORDER BY genre_name");
+    res.json(genres);
+});
+
+exports.getSeriesByGenre = wrapAsync(async (req, res) => {
+    const genreName = req.params.genreName;
+    const sql = `
+        SELECT s.series_id, s.title, s.poster_url, s.series_rating, s.summary, s.release_year
+        FROM series s
+        JOIN series_genres sg ON s.series_id = sg.series_id
+        JOIN genres g ON sg.genre_id = g.genre_id
+        WHERE g.genre_name = ?
+        ORDER BY s.series_rating DESC;
+    `;
+    const [series] = await connection.promise().query(sql, [genreName]);
+    res.json(series);
+});

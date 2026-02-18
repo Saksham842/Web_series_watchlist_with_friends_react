@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "saksham",
+    "email": "sakshamhans301@gmail.com",
+    "verified": 1
+  },
+  {
+    "id": 2,
+    "name": "tanay",
+    "email": "tanay3183@gmail.com",
+    "verified": 1
+  },
+  {
+    "id": 4,
+    "name": "sakshamtyagi",
+    "email": "sakshamhans51@gmail.com",
+    "verified": 0
+  }
+]

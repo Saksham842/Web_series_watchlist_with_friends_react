@@ -4,6 +4,7 @@
   "description": "DBMS project",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tanay",
@@ -16,6 +17,7 @@
     "ejs": "^3.1.10",
     "ejs-mate": "^4.0.0",
     "express": "^5.1.0",
+    "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.2",
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.10",
