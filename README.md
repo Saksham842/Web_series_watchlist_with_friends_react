@@ -127,5 +127,3 @@ graph TD
 ## 📜 Author
 **Saksham Hans**
 
----
-*Developed with ❤️ as a modern DBMS project.*
