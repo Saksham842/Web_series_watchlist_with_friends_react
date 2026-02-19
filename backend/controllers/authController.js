@@ -1,14 +1,7 @@
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const connection = require("../config/db");
-const crypto = require("crypto");
-
-// Helper to wrap async functions
-const wrapAsync = (fn) => {
-    return function (req, res, next) {
-        fn(req, res, next).catch(next);
-    };
-};
+const wrapAsync = require("../utils/wrapAsync");
 
 exports.register = wrapAsync(async (req, res) => {
     const { name, email, password } = req.body;
@@ -19,7 +12,7 @@ exports.register = wrapAsync(async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     const q = `
         INSERT INTO user (name, email, password, verified, otp, otp_expires_at)
@@ -36,16 +29,14 @@ exports.register = wrapAsync(async (req, res) => {
         [name, email, hashedPassword, 0, otp, otpExpiry],
         async (err) => {
             if (err) {
-                console.error("Error inserting user:", err);
                 return res.status(500).json({ message: "Registration failed." });
             }
 
-            // Log OTP for testing/debugging
-            console.log(`[DEV] OTP for ${email}: ${otp}`);
-
             try {
                 const transporter = nodemailer.createTransport({
-                    service: "gmail",
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    secure: false, // TLS
                     auth: {
                         user: process.env.EMAIL,
                         pass: process.env.EMAIL_PASS,
@@ -53,7 +44,7 @@ exports.register = wrapAsync(async (req, res) => {
                 });
 
                 await transporter.sendMail({
-                    from: process.env.EMAIL,
+                    from: `"BingeSync" <${process.env.EMAIL}>`,
                     to: email,
                     subject: "Your OTP for Email Verification",
                     html: `<p>Hi ${name},</p>
@@ -63,9 +54,9 @@ exports.register = wrapAsync(async (req, res) => {
 
                 res.json({ message: "OTP sent to email. Please verify." });
             } catch (mailErr) {
-                console.error("Email sending failed:", mailErr);
-                // For development: return success with OTP if email fails
-                res.status(200).json({ message: `Email failed (Check Console). OTP: ${otp}` });
+                res.status(200).json({ 
+                    message: "Registration successful, but email sending failed. Please check your credentials.",
+                });
             }
         }
     );
@@ -97,7 +88,6 @@ exports.verifyOtp = wrapAsync(async (req, res) => {
 
 exports.login = wrapAsync(async (req, res) => {
     const { email, password } = req.body;
-    console.log(`BACKEND: Login attempt for email: ${email}`);
 
     if (!email || !password) {
         return res.status(400).json({ message: "Please fill in all fields." });
@@ -105,30 +95,23 @@ exports.login = wrapAsync(async (req, res) => {
 
     const q = "SELECT * FROM user WHERE email = ?";
     connection.query(q, [email], async (err, results) => {
-        if (err) {
-            console.error("BACKEND: Database error during login:", err);
-            return res.status(500).json({ message: "Server error." });
-        }
+        if (err) return res.status(500).json({ message: "Server error." });
 
         if (results.length === 0) {
-            console.warn(`BACKEND: Login failed - No account found for email: ${email}`);
             return res.status(401).json({ message: "No account found with this email." });
         }
 
         const user = results[0];
 
         if (!user.verified) {
-            console.warn(`BACKEND: Login failed - User not verified: ${email}`);
             return res.status(403).json({ message: "Please verify your email before logging in." });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            console.warn(`BACKEND: Login failed - Incorrect password for email: ${email}`);
             return res.status(401).json({ message: "Incorrect password." });
         }
 
-        // Standard session login for now, but enabling JSON response
         req.session.user = { 
             id: user.id, 
             name: user.name, 
@@ -136,7 +119,6 @@ exports.login = wrapAsync(async (req, res) => {
             bio: user.bio,
             profile_pic: user.profile_pic
         };
-        console.log(`BACKEND: Login successful for user: ${user.name} (id: ${user.id})`);
         res.json({ message: "Login successful", user: req.session.user });
     });
 });

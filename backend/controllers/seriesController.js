@@ -2,13 +2,19 @@ const connection = require("../config/db");
 const wrapAsync = require("../utils/wrapAsync"); 
 
 exports.getHome = wrapAsync(async (req, res) => {
-    // HERO SECTION – Top 6 rated series
+    // HERO SECTION – Handpicked favorites
     const [heroSeries] = await connection.promise().query(`
-      SELECT s.series_id, s.title, s.landscape_poster_url,
+      SELECT s.series_id, s.title, s.landscape_poster_url, s.trailer_url,
              s.series_rating, s.summary AS description, s.release_year
       FROM series s
-      ORDER BY s.series_rating DESC
-      LIMIT 6;
+      WHERE s.title IN (
+        'Squid Game', 'Breaking Bad', 'Sherlock', 
+        'Game of Thrones', 'The Last of Us', 'Friends'
+      )
+      ORDER BY FIELD(s.title,
+        'Squid Game', 'Breaking Bad', 'Sherlock', 
+        'Game of Thrones', 'The Last of Us', 'Friends'
+      );
     `);
 
     // TRENDING MOVIES – handpicked

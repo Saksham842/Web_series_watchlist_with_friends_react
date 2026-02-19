@@ -18,17 +18,17 @@ const Row = ({ title, data, isAutoScroll = false }) => {
     }, [data]);
 
     useEffect(() => {
-        if (isAutoScroll) {
+        if (isAutoScroll && isInView && data && data.length > 0) {
             controls.start({
                 x: "-50%",
                 transition: {
-                    duration: 40,
+                    duration: 18,
                     ease: "linear",
                     repeat: Infinity,
                 }
             });
         }
-    }, [isAutoScroll, controls]);
+    }, [isAutoScroll, isInView, controls, data]);
 
     const scroll = (offset) => {
         if (rowRef.current) {
@@ -71,7 +71,7 @@ const Row = ({ title, data, isAutoScroll = false }) => {
                     onHoverStart={() => controls.stop()}
                     onHoverEnd={() => controls.start({
                         x: "-50%", 
-                        transition: { duration: 40, ease: "linear", repeat: Infinity } 
+                        transition: { duration: 18, ease: "linear", repeat: Infinity } 
                     })}
                 >
                     {loopedData.map((item, index) => (

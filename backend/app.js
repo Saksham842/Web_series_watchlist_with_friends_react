@@ -1,4 +1,3 @@
-console.log("DEBUG: APP.JS IS STARTING");
 const express = require("express");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
@@ -57,18 +56,9 @@ app.use(
     })
 );
 
-// Request Logger & Session Debug (Moved after session middleware)
-app.use((req, res, next) => {
-    console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
-    console.log("DEBUG: Session ID:", req.sessionID);
-    console.log("DEBUG: Session User:", req.session && req.session.user ? req.session.user.id : "Not Logged In");
-    next();
-});
-
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const seriesRoutes = require("./routes/seriesRoutes");
-console.log("DEBUG: seriesRoutes loaded, keys:", Object.keys(seriesRoutes));
 const watchlistRoutes = require("./routes/watchlistRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
